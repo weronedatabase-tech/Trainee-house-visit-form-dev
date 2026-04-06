@@ -4,6 +4,7 @@ const DEV_API_URL = 'https://script.google.com/macros/s/AKfycbzsU73hNlYm9vqAY4Mn
 const PROD_API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec';
 
 const CONFIG = {
+    ENVIRONMENT: ENVIRONMENT,
     API_URL: ENVIRONMENT === "Dev" ? DEV_API_URL : PROD_API_URL,
     
     STATIC_GUIDES: { 
