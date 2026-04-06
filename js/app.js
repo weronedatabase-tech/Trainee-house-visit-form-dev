@@ -1,5 +1,6 @@
 function appData() {
     return {
+        isDevMode: CONFIG.ENVIRONMENT === 'Dev',
         view: 'dashboard', 
         darkMode: localStorage.getItem('theme') === 'dark',
         isLoggedIn: false, // Always starts as false to force login
@@ -7,7 +8,7 @@ function appData() {
         showLoginPass: false, 
         loginError: '',
         toast: { visible: false, message: '', type: 'success' },
-        headers: [], trainees: [], projects:[], mapping: {}, sectionOrder:[], searchQuery: '', loadingTrainees: false,
+        headers: [], trainees:[], projects: [], mapping: {}, sectionOrder:[], searchQuery: '', loadingTrainees: false,
         formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
         showSettings: false, settingsPass: '', showSettingsPass: false, settingsUnlocked: false, settingsError: '', 
         newColumnName: '', newAppPass: '', newSettingsPass: '',
@@ -173,10 +174,13 @@ function appData() {
             try {
                 const data = await this.performAction('getConfig');
                 this.headers = Array.isArray(data.headers) ? data.headers.map(String) :[];
-                this.trainees = data.trainees || [];
-                this.projects = data.projects ||[];
-                this.mapping = data.mapping || {};
-                this.sectionOrder = data.sectionOrder ||[];
+                
+                // Safe assignment to avoid syntax bug
+                if (data.trainees) this.trainees = data.trainees;
+                if (data.projects) this.projects = data.projects;
+                if (data.mapping) this.mapping = data.mapping;
+                if (data.sectionOrder) this.sectionOrder = data.sectionOrder;
+
                 localStorage.setItem('appConfig', JSON.stringify({ 
                     headers: this.headers, 
                     trainees: this.trainees, 
@@ -272,10 +276,10 @@ function appData() {
         },
 
         get groupedHeaders() {
-            if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return[];
+            if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
             
             let groups =[];
-            const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
+            const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder :['General Details'];
 
             const getColors = (t) => {
                 const l=t.toLowerCase();
