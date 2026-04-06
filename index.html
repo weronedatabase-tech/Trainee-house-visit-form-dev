@@ -38,10 +38,10 @@
         }
     </script>
 
-    <!-- DYNAMIC CACHE-BUSTING FOR CSS -->
+    <!-- DYNAMIC CACHE-BUSTING FOR CSS (Flat Hierarchy) -->
     <script>
         var cacheBuster = new Date().getTime();
-        document.write('<link rel="stylesheet" href="css/styles.css?v=' + cacheBuster + '">');
+        document.write('<link rel="stylesheet" href="styles.css?v=' + cacheBuster + '">');
     </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
@@ -313,11 +313,10 @@
         </div>
     </div>
 
-    <!-- DYNAMIC CACHE-BUSTING FOR JS -->
+    <!-- DYNAMIC CACHE-BUSTING FOR JS (Flat Hierarchy) -->
     <script>
         var cacheBuster = new Date().getTime();
-        document.write('<script src="js/config.js?v=' + cacheBuster + '"><\/script>');
-        document.write('<script src="js/app.js?v=' + cacheBuster + '"><\/script>');
+        document.write('<script src="app.js?v=' + cacheBuster + '"><\/script>');
     </script>
 </body>
 </html>
