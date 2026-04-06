@@ -2,12 +2,12 @@ function appData() {
     return {
         view: 'dashboard', 
         darkMode: localStorage.getItem('theme') === 'dark',
-        isLoggedIn: false, // Always starts as false now
+        isLoggedIn: false, // Always starts as false to force login
         loginPass: '', 
         showLoginPass: false, 
         loginError: '',
         toast: { visible: false, message: '', type: 'success' },
-        headers: [], trainees: [], projects: [], mapping: {}, sectionOrder:[], searchQuery: '', loadingTrainees: false,
+        headers: [], trainees: [], projects:[], mapping: {}, sectionOrder:[], searchQuery: '', loadingTrainees: false,
         formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
         showSettings: false, settingsPass: '', showSettingsPass: false, settingsUnlocked: false, settingsError: '', 
         newColumnName: '', newAppPass: '', newSettingsPass: '',
@@ -30,9 +30,7 @@ function appData() {
             this.toggleTheme(false);
             this.loadConfigFromStorage();
             if (navigator.onLine) this.fetchConfig();
-            
-            // REMOVED: The check for localStorage 'isLoggedIn' token.
-            // The user will now be forced to log in every time the page loads.
+            // Removed localStorage check for isLoggedIn so it always prompts for password
         },
 
         toggleSection(title) {
@@ -164,8 +162,6 @@ function appData() {
                 const data = await this.performAction('login', { password: this.loginPass });
                 if (data.success) { 
                     this.isLoggedIn = true; 
-                    // REMOVED: localStorage.setItem('isLoggedIn', 'true');
-                    // We no longer save the login state to the browser.
                     await this.fetchConfig(); 
                 } 
                 else this.loginError = 'Incorrect Password';
@@ -177,7 +173,7 @@ function appData() {
             try {
                 const data = await this.performAction('getConfig');
                 this.headers = Array.isArray(data.headers) ? data.headers.map(String) :[];
-                this.trainees = data.trainees ||[];
+                this.trainees = data.trainees || [];
                 this.projects = data.projects ||[];
                 this.mapping = data.mapping || {};
                 this.sectionOrder = data.sectionOrder ||[];
@@ -385,12 +381,57 @@ function appData() {
         isLongText(n) { return !this.isDate(n) && !this.isShortInput(n) && !this.isProjectField(n) && !this.isLikertScale(n); },
         
         loadConfigFromStorage() { 
-            const c = localStorage.getItem('appConfig'); 
-            if(c) { 
+            let savedData = localStorage.getItem('appConfig'); 
+            if (savedData) { 
                 try { 
-                    const d=JSON.parse(c); 
-                    this.headers=d.headers||[]; 
-                    this.trainees=d.trainees||[]; 
-                    this.projects=d.projects||[]; 
-                    this.mapping=d.mapping||{}; 
-                    this.sectionOrder=d.sectionOrder||
+                    let parsed = JSON.parse(savedData); 
+                    
+                    if (parsed.headers) this.headers = parsed.headers;
+                    if (parsed.trainees) this.trainees = parsed.trainees;
+                    if (parsed.projects) this.projects = parsed.projects;
+                    if (parsed.mapping) this.mapping = parsed.mapping;
+                    if (parsed.sectionOrder) this.sectionOrder = parsed.sectionOrder;
+                    
+                } catch(e) {
+                    console.error("Error loading config", e);
+                } 
+            } 
+        },
+        
+        resetAppData() { 
+            localStorage.clear(); 
+            window.location.reload(true); 
+        },
+        
+        openSettings() { 
+            this.showSettings = true; 
+        },
+        
+        unlockSettings() { 
+            if (this.settingsPass === 'werone') {
+                this.settingsUnlocked = true; 
+            } else {
+                this.settingsError = 'Wrong Password';
+            }
+        },
+        
+        addColumn() { 
+            this.performAction('addColumn', { headerName: this.newColumnName }); 
+        },
+        
+        renameColumn(idx, name) { 
+            this.performAction('renameColumn', { colIndex: idx, newName: name }); 
+        },
+        
+        changePassword() { 
+            // Implementation for changing password 
+        },
+        
+        showToast(m, t) { 
+            this.toast.message = m;
+            this.toast.type = t;
+            this.toast.visible = true;
+            setTimeout(() => { this.toast.visible = false; }, 3000); 
+        }
+    };
+}
