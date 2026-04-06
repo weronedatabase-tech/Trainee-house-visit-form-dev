@@ -8,7 +8,7 @@ function appData() {
         showLoginPass: false, 
         loginError: '',
         toast: { visible: false, message: '', type: 'success' },
-        headers: [], trainees: [], projects: [], mapping: {}, sectionOrder:[], searchQuery: '', loadingTrainees: false,
+        headers: [], trainees: [], projects:[], mapping: {}, sectionOrder:[], searchQuery: '', loadingTrainees: false,
         formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
         showSettings: false, settingsPass: '', showSettingsPass: false, settingsUnlocked: false, settingsError: '', 
         newColumnName: '', newAppPass: '', newSettingsPass: '',
@@ -259,13 +259,24 @@ function appData() {
                     rowData[0] = new Date();
                 }
 
+                // Extract the trainee name to send to the backend
+                const nameIdx = this.getNameIndex();
+                const submittedName = nameIdx !== -1 ? this.formData[nameIdx] : '';
+
                 if (navigator.onLine) {
-                    const result = await this.performAction('submit', { row: rowData });
+                    const result = await this.performAction('submit', { 
+                        row: rowData,
+                        traineeName: submittedName // Send name for lookup check
+                    });
+                    
                     if (result.success) {
                         this.showToast('Submitted successfully!', 'success');
                         this.view = 'dashboard';
                         this.formData = {};
                         this.searchQuery = '';
+                        
+                        // Refresh config in the background so the new name appears in the search list immediately
+                        this.fetchConfig(); 
                     } else {
                         throw new Error(result.error || 'Submission failed');
                     }
@@ -281,7 +292,7 @@ function appData() {
         },
 
         get groupedHeaders() {
-            if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
+            if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return[];
             
             let groups =[];
             const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
